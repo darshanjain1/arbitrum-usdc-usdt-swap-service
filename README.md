@@ -2,7 +2,8 @@
 
 ## Objective
 
-A Node.js/TypeScript backend that programmatically swaps USDC for USDT on Arbitrum One, using Uniswap v3.  
+A Node.js/TypeScript backend that programmatically swaps USDC for USDT on Arbitrum One, using Uniswap v3.
+
 - Quotes the expected output with slippage protection
 - Builds, signs, and broadcasts the swap transaction
 - Waits for confirmation and returns a concise JSON receipt
@@ -20,15 +21,17 @@ A Node.js/TypeScript backend that programmatically swaps USDC for USDT on Arbitr
 ## Setup
 
 1. **Clone the repo and install dependencies:**
+
 - git clone <your-repo-url>
 - cd usdc-usdt-swap
 - npm install
 
 2. **Configure environment variables:**
+
 - cp .env.example .env
 
-
 3. **Fund your dev wallet:**
+
 - Get testnet ETH from [Arbitrum Goerli Faucet](https://faucet.quicknode.com/arbitrum/sepolia)
 - Swap for testnet USDC/USDT on a testnet DEX or use a faucet
 
@@ -38,10 +41,7 @@ A Node.js/TypeScript backend that programmatically swaps USDC for USDT on Arbitr
 
 **POST /swap**
 
-Request: {
-"amountIn": "10.00",
-"slippageBps": 50
-}
+Request: { "amountIn": "10.00" }
 
 Response: {
 "blockNumber": 123456,
@@ -51,20 +51,16 @@ Response: {
 "effectivePrice": 1.001
 }
 
-
 **Example:**
 
 curl -X POST http://localhost:3000/swap
 -H "Content-Type: application/json"
--d '{"amountIn": "10.00", "slippageBps": 50}'
-
+-d '{"amountIn": "10.00"}'
 
 ### Scripts & Tests
 
 **Run the server:**
-npm run build
-npm start
-
+npm run start
 
 **Run tests:**
-npx hardhat test or npm run test
+npm run test

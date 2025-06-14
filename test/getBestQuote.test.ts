@@ -1,15 +1,15 @@
-import { expect } from 'chai';
-import sinon from 'sinon';
-import { getBestQuote } from '../src/services/getBestQuote';
-import * as poolFactory from '../src/services/poolFactory';
-import * as quoter from '../src/services/quoter';
-import { JsonRpcProvider } from 'ethers';
+import { expect } from "chai";
+import sinon from "sinon";
+import { getBestQuote } from "../src/services/getBestQuote";
+import * as poolFactory from "../src/services/poolFactory";
+import * as quoter from "../src/services/quoter";
+import { JsonRpcProvider } from "ethers";
 
 describe("getBestQuote", () => {
   const addresses = {
     USDC: "0xUSDC",
     USDT: "0xUSDT",
-    QUOTER_V2: "0xQUOTER"
+    QUOTER_V2: "0xQUOTER",
   };
 
   const provider = {} as JsonRpcProvider;
@@ -19,14 +19,21 @@ describe("getBestQuote", () => {
   });
 
   it("returns best quote among fee tiers", async () => {
-    sinon.stub(poolFactory, 'getPoolWithLiquidity')
-      .onFirstCall().resolves({ address: "0xPool1", liquidity: 1000n })
-      .onSecondCall().resolves({ address: "0xPool2", liquidity: 1000n })
-      .onThirdCall().resolves(null);
+    sinon
+      .stub(poolFactory, "getPoolWithLiquidity")
+      .onFirstCall()
+      .resolves({ address: "0xPool1", liquidity: 1000n })
+      .onSecondCall()
+      .resolves({ address: "0xPool2", liquidity: 1000n })
+      .onThirdCall()
+      .resolves(null);
 
-    sinon.stub(quoter, 'getQuoteExactInputSingle')
-      .onFirstCall().resolves(9800000n)
-      .onSecondCall().resolves(9900000n);
+    sinon
+      .stub(quoter, "getQuoteExactInputSingle")
+      .onFirstCall()
+      .resolves(9800000n)
+      .onSecondCall()
+      .resolves(9900000n);
 
     const result = await getBestQuote(10_000_000n, 100, provider, addresses);
 
@@ -36,7 +43,7 @@ describe("getBestQuote", () => {
   });
 
   it("throws if no valid pool found", async () => {
-    sinon.stub(poolFactory, 'getPoolWithLiquidity').resolves(null);
+    sinon.stub(poolFactory, "getPoolWithLiquidity").resolves(null);
 
     try {
       await getBestQuote(10_000_000n, 100, provider, addresses);

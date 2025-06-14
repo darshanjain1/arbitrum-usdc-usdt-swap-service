@@ -1,6 +1,6 @@
-import { JsonRpcProvider } from 'ethers';
-import { getPoolWithLiquidity } from './poolFactory';
-import { getQuoteExactInputSingle } from './quoter';
+import { JsonRpcProvider } from "ethers";
+import { getPoolWithLiquidity } from "./poolFactory";
+import { getQuoteExactInputSingle } from "./quoter";
 
 interface Addresses {
   USDC: string;
@@ -12,7 +12,7 @@ export async function getBestQuote(
   amountIn: bigint,
   slippageBps: number,
   provider: JsonRpcProvider,
-  addresses: Addresses
+  addresses: Addresses,
 ) {
   const feeTiers = [100, 500, 3000];
   let best = { amountOut: 0n, fee: 0 };
@@ -33,7 +33,7 @@ export async function getBestQuote(
         best = { amountOut, fee };
       }
     } catch (error) {
-      console.error( error);
+      console.error(error);
       continue;
     }
   }
@@ -41,7 +41,7 @@ export async function getBestQuote(
   if (best.amountOut === 0n) throw new Error("No valid USDC/USDT pool found");
 
   // Slippage Adjusted Mininum Out
-  const minAmountOut = best.amountOut * (10_000n - BigInt(slippageBps)) / 10_000n;
+  const minAmountOut = (best.amountOut * (10_000n - BigInt(slippageBps))) / 10_000n;
   return {
     amountOut: best.amountOut,
     slippageAdjustedAmountOut: minAmountOut,
