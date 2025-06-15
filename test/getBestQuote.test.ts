@@ -62,17 +62,21 @@ describe("getBestQuote", () => {
   it("skips high gas pools but returns best from valid ones", async () => {
     sinon
       .stub(poolFactory, "getPoolWithLiquidity")
-      .onFirstCall().resolves({ address: "0xPool1", liquidity: 1000n }) // high gas
-      .onSecondCall().resolves({ address: "0xPool2", liquidity: 1000n }); // valid
+      .onFirstCall()
+      .resolves({ address: "0xPool1", liquidity: 1000n }) // high gas
+      .onSecondCall()
+      .resolves({ address: "0xPool2", liquidity: 1000n }); // valid
     sinon
       .stub(quoter, "getQuoteExactInputSingle")
-      .onFirstCall().resolves({ amountOut: 9999999n, gasEstimate: 20_000_000n }) // too high
-      .onSecondCall().resolves({ amountOut: 9900000n, gasEstimate: 100000n });
-  
+      .onFirstCall()
+      .resolves({ amountOut: 9999999n, gasEstimate: 20_000_000n }) // too high
+      .onSecondCall()
+      .resolves({ amountOut: 9900000n, gasEstimate: 100000n });
+
     const result = await getBestQuote(10_000_000n, 100, provider, addresses);
-  
+
     expect(result.amountOut).to.equal(9900000n);
-  });  
+  });
 
   it("throws if no pool has liquidity", async () => {
     sinon.stub(poolFactory, "getPoolWithLiquidity").resolves(null);

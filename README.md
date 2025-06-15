@@ -55,7 +55,7 @@ Response: {
 
 curl -X POST http://localhost:3000/swap
 -H "Content-Type: application/json"
--d '{"amountIn": "10.00"}'
+-d '{"amountIn": "1.00"}'
 
 ### Scripts & Tests
 

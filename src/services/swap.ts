@@ -22,11 +22,16 @@ const SWAP_ROUTER_ABI = [
 export async function executeSwap(amountIn: string) {
   // 1. Get quote
   const amountInWei = ethers.parseUnits(amountIn, 6);
-  const { feeTier, slippageAdjustedOut } = await getBestQuote(amountInWei, config.SLIPPAGE_BPS, provider, {
-    QUOTER_V2: config.QUOTER_V2,
-    USDC: config.USDC,
-    USDT: config.USDT,
-  });
+  const { feeTier, slippageAdjustedOut } = await getBestQuote(
+    amountInWei,
+    config.SLIPPAGE_BPS,
+    provider,
+    {
+      QUOTER_V2: config.QUOTER_V2,
+      USDC: config.USDC,
+      USDT: config.USDT,
+    },
+  );
 
   // 2. Approve if needed
   const usdc = new Contract(config.USDC, ERC20_ABI, wallet);
