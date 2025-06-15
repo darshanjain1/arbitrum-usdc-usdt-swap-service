@@ -1,6 +1,7 @@
 import { JsonRpcProvider } from "ethers";
 import { getPoolWithLiquidity } from "./poolFactory";
 import { getQuoteExactInputSingle } from "./quoter";
+import { config } from "../config";
 
 interface Addresses {
   USDC: string;
@@ -15,36 +16,51 @@ export async function getBestQuote(
   addresses: Addresses,
 ) {
   const feeTiers = [100, 500, 3000];
-  let best = { amountOut: 0n, fee: 0 };
+  let best = { amountOut: 0n, feeTier: 0 };
+  let skippedDueToGas: number[] = [];
 
-  for (const fee of feeTiers) {
+  for (const feeTier of feeTiers) {
     try {
-      const pool = await getPoolWithLiquidity(provider, addresses.USDC, addresses.USDT, fee);
+      const pool = await getPoolWithLiquidity(provider, addresses.USDC, addresses.USDT, feeTier);
       if (!pool) continue;
 
-      const amountOut = await getQuoteExactInputSingle(provider, addresses.QUOTER_V2, {
+      const { amountOut, gasEstimate } = await getQuoteExactInputSingle(provider, addresses.QUOTER_V2, {
         tokenIn: addresses.USDC,
         tokenOut: addresses.USDT,
         amountIn,
-        fee,
+        fee: feeTier,
       });
 
+      if (gasEstimate > BigInt(config.GAS_LIMIT)) {
+        console.warn(`Skipping fee tier ${feeTier}: Estimated gas ${gasEstimate} exceeds limit ${config.GAS_LIMIT}`);
+        skippedDueToGas.push(feeTier);
+        continue;
+      }
+  
       if (amountOut > best.amountOut) {
-        best = { amountOut, fee };
+        best = { amountOut, feeTier };
       }
     } catch (error) {
-      console.error(error);
+      console.error(`Error in fee tier ${feeTier}:`, error);
       continue;
     }
   }
 
-  if (best.amountOut === 0n) throw new Error("No valid USDC/USDT pool found");
+  if (best.amountOut === 0n) {
+    if (skippedDueToGas.length === feeTiers.length) {
+      throw new Error(
+        `All available pools were skipped due to gas exceeding the configured limit of ${config.GAS_LIMIT}. ` +
+        `Fee tiers tried: ${skippedDueToGas.join(", ")}. Try increasing gas limit or lowering input amount.`
+      );
+    } else {
+      throw new Error("No valid USDC/USDT pool found for this trade.");
+    }
+  }
 
   // Slippage Adjusted Mininum Out
   const minAmountOut = (best.amountOut * (10_000n - BigInt(slippageBps))) / 10_000n;
   return {
-    amountOut: best.amountOut,
-    slippageAdjustedAmountOut: minAmountOut,
-    feeTier: best.fee,
+    ...best,
+    slippageAdjustedOut: minAmountOut,
   };
 }

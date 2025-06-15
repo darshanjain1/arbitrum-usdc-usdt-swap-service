@@ -22,10 +22,10 @@ const SWAP_ROUTER_ABI = [
 export async function executeSwap(amountIn: string) {
   // 1. Get quote
   const amountInWei = ethers.parseUnits(amountIn, 6);
-  const quote = await getBestQuote(amountInWei, config.SLIPPAGE_BPS, provider, {
-    QUOTER_V2: "0x61ffe014ba17989e743c5f6cb21bf9697530b21e",
-    USDC: "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
-    USDT: "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
+  const { feeTier, slippageAdjustedOut } = await getBestQuote(amountInWei, config.SLIPPAGE_BPS, provider, {
+    QUOTER_V2: config.QUOTER_V2,
+    USDC: config.USDC,
+    USDT: config.USDT,
   });
 
   // 2. Approve if needed
@@ -41,24 +41,13 @@ export async function executeSwap(amountIn: string) {
   const params = {
     tokenIn: config.USDC,
     tokenOut: config.USDT,
-    fee: quote.feeTier,
+    fee: feeTier,
     recipient: wallet.address,
     amountIn: amountInWei,
-    amountOutMinimum: quote.slippageAdjustedAmountOut,
+    amountOutMinimum: slippageAdjustedOut,
     deadline: Math.floor(Date.now() / 1000) + 60 * 10,
     sqrtPriceLimitX96: 0n,
   };
-
-  // 4. Estimate gas
-  let expectedGasUsage: bigint;
-  try {
-    expectedGasUsage = await swapRouter.exactInputSingle.estimateGas(params);
-    if (expectedGasUsage > BigInt(config.GAS_LIMIT)) {
-      throw new Error("Estimated gas exceeds allowed limit");
-    }
-  } catch (e) {
-    throw new Error("Gas estimation failed: " + (e as Error).message);
-  }
 
   // 5. Nonce handling with retry
   let tx,
@@ -68,7 +57,7 @@ export async function executeSwap(amountIn: string) {
 
   while (attempts < 3) {
     try {
-      tx = await swapRouter.exactInputSingle(params, { nonce, expectedGasUsage });
+      tx = await swapRouter.exactInputSingle(params, { nonce, gasLimit: BigInt(config.GAS_LIMIT) });
       console.log("Transaction Hash for attempt no.", attempts, "is", tx.hash);
       receipt = await tx.wait(2);
       break;

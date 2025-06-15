@@ -13,14 +13,15 @@ export async function getQuoteExactInputSingle(
     amountIn: bigint;
     fee: number;
   },
-): Promise<bigint> {
+): Promise<{amountOut:bigint, gasEstimate: bigint}> {
   const quoter = new Contract(quoterAddress, QUOTER_ABI, provider);
-  const { amountOut } = await quoter.quoteExactInputSingle.staticCall({
+  const [ amountOut,,, gasEstimate] = await quoter.quoteExactInputSingle.staticCall({
     tokenIn: params.tokenIn,
     tokenOut: params.tokenOut,
     amountIn: params.amountIn,
     fee: params.fee,
     sqrtPriceLimitX96: 0n,
   });
-  return amountOut;
+  
+  return {amountOut, gasEstimate};
 }
