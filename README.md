@@ -32,7 +32,7 @@ A Node.js/TypeScript backend that programmatically swaps USDC for USDT on Arbitr
 
 3. **Fund your dev wallet:**
 
-- Get testnet ETH from [Arbitrum Goerli Faucet](https://faucet.quicknode.com/arbitrum/sepolia)
+- Get testnet ETH from [Arbitrum Sepolia Faucet](https://faucet.quicknode.com/arbitrum/sepolia)
 - Swap for testnet USDC/USDT on a testnet DEX or use a faucet
 
 ## Usage
