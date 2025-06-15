@@ -1,5 +1,4 @@
 import "dotenv/config";
-import { ethers } from "ethers";
 
 export const config = {
   RPC_URL: process.env.ARBITRUM_RPC_URL!,
@@ -12,13 +11,3 @@ export const config = {
   USDC: "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
   USDT: "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
 };
-
-export const provider = new ethers.JsonRpcProvider(config.RPC_URL);
-
-export const wallet = (() => {
-  try {
-    return new ethers.Wallet(config.PRIVATE_KEY, provider);
-  } catch {
-    throw new Error("Invalid private key");
-  }
-})();

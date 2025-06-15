@@ -1,5 +1,5 @@
 import { Contract, ethers } from "ethers";
-import { config, wallet, provider } from "../config";
+import { config} from "../config";
 import { getBestQuote } from "./getBestQuote";
 
 const ERC20_ABI = [
@@ -21,6 +21,7 @@ const SWAP_ROUTER_ABI = [
 
 export async function executeSwap(amountIn: string) {
   // 1. Get quote
+  const provider = new ethers.JsonRpcProvider(config.RPC_URL);
   const amountInWei = ethers.parseUnits(amountIn, 6);
   const { feeTier, slippageAdjustedOut } = await getBestQuote(
     amountInWei,
@@ -34,6 +35,7 @@ export async function executeSwap(amountIn: string) {
   );
 
   // 2. Approve if needed
+  const wallet = new ethers.Wallet(config.PRIVATE_KEY, provider);
   const usdc = new Contract(config.USDC, ERC20_ABI, wallet);
   const allowance = await usdc.allowance(wallet.address, config.SWAP_ROUTER);
   if (allowance < amountInWei) {
